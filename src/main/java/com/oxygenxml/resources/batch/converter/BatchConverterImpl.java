@@ -1,6 +1,7 @@
 package com.oxygenxml.resources.batch.converter;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.zwobble.mammoth.internal.conversion.UnknownStylesReporter;
 import org.zwobble.mammoth.internal.documents.Style;
 
-import com.oxygenxml.batch.converter.core.ConversionFormatUtil;
 import com.oxygenxml.batch.converter.core.ConverterTypes;
 import com.oxygenxml.batch.converter.core.converters.ConversionResult;
 import com.oxygenxml.batch.converter.core.converters.ConvertedFilesManager;
@@ -29,6 +29,9 @@ import com.oxygenxml.batch.converter.core.printers.XMLFormatterException;
 import com.oxygenxml.batch.converter.core.transformer.TransformerFactoryCreator;
 import com.oxygenxml.batch.converter.core.utils.ConverterFileUtils;
 import com.oxygenxml.batch.converter.core.word.styles.WordStyleMapLoader;
+import com.oxygenxml.resources.batch.converter.latex.LatexConversionSupport;
+import com.oxygenxml.resources.batch.converter.latex.LatexInputsProvider;
+import com.oxygenxml.resources.batch.converter.latex.PandocLatexToHtmlConverter;
 import com.oxygenxml.resources.batch.converter.persister.OptionTags;
 import com.oxygenxml.resources.batch.converter.reporter.ProblemReporter;
 import com.oxygenxml.resources.batch.converter.reporter.ProgressDialogInteractor;
@@ -176,7 +179,7 @@ public class BatchConverterImpl implements BatchConverter {
   */
 	@Override
 	public List<File> convertFiles(String inputFormat, String outputFormat, UserInputsProvider inputsProvider) {
-	  String converterType = ConversionFormatUtil.getConverterType(inputFormat, outputFormat);
+	  String converterType = LatexConversionSupport.getConverterType(inputFormat, outputFormat);
 	  List<File> convertedFiles = new ArrayList<>();
 	  if(converterType != null) {
 	    convertedFiles = convertFiles(converterType, inputsProvider);
@@ -208,7 +211,10 @@ public class BatchConverterImpl implements BatchConverter {
 		if(logger.isDebugEnabled()) {
 		  logger.debug("Converter type: " + converterType);
 		}
-		Converter converter = ConverterCreator.create(converterType);
+		// LaTeX documents are converted to HTML with Pandoc, then the HTML to DITA converter does the rest.
+		boolean isLatexToDita = LatexConversionSupport.isLatexToDita(converterType);
+		String engineConverterType = LatexConversionSupport.getEngineConverterType(converterType);
+		Converter converter = ConverterCreator.create(engineConverterType);
 		PluginWorkspace pluginWorkspace = PluginWorkspaceProvider.getPluginWorkspace();
 		if(pluginWorkspace != null) {
 		  // EXM-50080: Impose the prettyPrinter from XMLUtilAccess
@@ -226,7 +232,8 @@ public class BatchConverterImpl implements BatchConverter {
         });
       }
 		}
-    ContentPrinter contentPrinter = ContentPrinterCreater.create(converterType);
+    ContentPrinter contentPrinter = ContentPrinterCreater.create(engineConverterType);
+    PandocLatexToHtmlConverter latexToHtmlConverter = isLatexToDita ? createLatexToHtmlConverter(pluginWorkspace) : null;
 
 		if(ConverterTypes.WORD_TO_XHTML.equals(converterType) || ConverterTypes.WORD_TO_DITA.equals(converterType)){
 		  if(pluginWorkspace != null) {
@@ -295,11 +302,15 @@ public class BatchConverterImpl implements BatchConverter {
 				if(!convertedFilesManager.isFileAlreadyConverted(currentFile)) {
 				  converterStatusReporter.conversionInProgress(currentFile);
 
-				  //convert and print the current file.
-				  File outputFile = convertAndPrintFile(
-				      currentFile,
-				      getOutputFile(currentFile, ExtensionGetter.getOutputExtension(converterType), outputFolder, inputsProvider),
-				      converter, contentPrinter, converterType, inputsProvider);
+				  File outputFile = getOutputFile(currentFile, ExtensionGetter.getOutputExtension(engineConverterType), outputFolder, inputsProvider);
+				  if (isLatexToDita) {
+				    outputFile = convertLatexAndPrintFile(currentFile, outputFile, latexToHtmlConverter,
+				        converter, contentPrinter, engineConverterType, inputsProvider);
+				  } else {
+				    //convert and print the current file.
+				    outputFile = convertAndPrintFile(currentFile, currentFile, outputFile,
+				        converter, contentPrinter, converterType, inputsProvider);
+				  }
 				  
 				  convertedFilesManager.addConvertedFile(currentFile, outputFile);
 				}
@@ -317,8 +328,62 @@ public class BatchConverterImpl implements BatchConverter {
 	
 	
 	/**
+	 * Create the converter that runs Pandoc, using the Pandoc location from the add-on options.
+	 * 
+	 * @param pluginWorkspace The plugin workspace, may be <code>null</code>.
+	 * 
+	 * @return The LaTeX to HTML converter.
+	 */
+	private static PandocLatexToHtmlConverter createLatexToHtmlConverter(PluginWorkspace pluginWorkspace) {
+	  String pandocExecutable = null;
+	  if (pluginWorkspace != null && pluginWorkspace.getOptionsStorage() != null) {
+	    pandocExecutable = pluginWorkspace.getOptionsStorage().getOption(OptionTags.PANDOC_EXECUTABLE, null);
+	  }
+	  return new PandocLatexToHtmlConverter(pandocExecutable);
+	}
+	
+	/**
+	 * Convert the given LaTeX file to HTML with Pandoc, then convert the HTML to DITA.
+	 * 
+	 * @param latexFile            The LaTeX file.
+	 * @param outputFile           The output file.
+	 * @param latexToHtmlConverter Runs Pandoc.
+	 * @param converter            The HTML to DITA converter.
+	 * @param contentPrinter       The content printer.
+	 * @param engineConverterType  The HTML to DITA converter type.
+	 * @param inputsProvider       Provider for the user inputs like input files, output directory and another options.
+	 * 
+	 * @return The converted file, or <code>null</code> if conversion failed
+	 */
+	private File convertLatexAndPrintFile(File latexFile, File outputFile, PandocLatexToHtmlConverter latexToHtmlConverter,
+	    Converter converter, ContentPrinter contentPrinter, String engineConverterType, UserInputsProvider inputsProvider) {
+	  File convertedFile = null;
+	  File htmlFile = null;
+	  try {
+	    htmlFile = File.createTempFile("latex2dita", ".html");
+	    latexToHtmlConverter.convert(latexFile, htmlFile);
+	    convertedFile = convertAndPrintFile(latexFile, htmlFile, outputFile, converter, contentPrinter,
+	        engineConverterType, new LatexInputsProvider(inputsProvider));
+	  } catch (IOException e) {
+	    if(logger.isDebugEnabled()) {
+	      logger.debug(e.getMessage(), e);
+	    }
+	    problemReporter.reportProblem(e, latexFile);
+	    isSuccessfully = false;
+	    failedFile++;
+	  } finally {
+	    if (htmlFile != null && !htmlFile.delete()) {
+	      htmlFile.deleteOnExit();
+	    }
+	  }
+	  return convertedFile;
+	}
+	
+	/**
 	 * Convert the given file using the given converter and print the converted result using the given contentPrinter. 
-	 * @param file            The file.
+	 * @param file            The input file, used for reporting and for naming the output.
+	 * @param fileToConvert   The file given to the converter. It differs from the input file when the input
+	 *                        was converted to an intermediate format first.
 	 * @param outputFile      The outputFile
 	 * @param converter       The converter. 
 	 * @param contentPrinter  The contentPrinter.
@@ -327,11 +392,11 @@ public class BatchConverterImpl implements BatchConverter {
    * 
    * @return The converted file, or <code>null</code> if conversion failed
  	 */
-	private File convertAndPrintFile(File file, File outputFile, Converter converter, ContentPrinter contentPrinter,
+	private File convertAndPrintFile(File file, File fileToConvert, File outputFile, Converter converter, ContentPrinter contentPrinter,
 			String converterType, UserInputsProvider inputsProvider) {
 	  File convertedFile = null;
 		try {
-			ConversionResult conversionResult = converter.convert(file, null, transformerFactoryCreator, inputsProvider);
+			ConversionResult conversionResult = converter.convert(fileToConvert, null, transformerFactoryCreator, inputsProvider);
 			if (!conversionResult.shouldSkipPrinting()) {
 			  String convertedContent = conversionResult.getConvertedContent();
 			  

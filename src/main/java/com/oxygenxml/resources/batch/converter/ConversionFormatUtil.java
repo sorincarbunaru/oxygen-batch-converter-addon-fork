@@ -1,5 +1,7 @@
 package com.oxygenxml.resources.batch.converter;
 
+import com.oxygenxml.resources.batch.converter.latex.LatexConversionSupport;
+
 /**
  * Utility class for working with conversion formats.
  * This class is used from the "Batch Converter" script from Oxygen. Do NOT delete it.
@@ -27,6 +29,6 @@ public final class ConversionFormatUtil {
    * @return <code>true</code> if it's supported, <code>false</code> otherwise.
    */
   public static boolean isSupportedConversionFormat(String inputFormat, String outputFormat) {
-    return com.oxygenxml.batch.converter.core.ConversionFormatUtil.isSupportedConversionFormat(inputFormat, outputFormat);
+    return LatexConversionSupport.isSupportedConversionFormat(inputFormat, outputFormat);
   }
 }

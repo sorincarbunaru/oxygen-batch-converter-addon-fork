@@ -21,6 +21,7 @@
                         <li>OpenAPI to DITA</li>
                         <li>Confluence to DITA</li>
                         <li>DocBook to DITA</li>
+                        <li>LaTeX to DITA (requires Pandoc)</li>
                         <li>XML to JSON/YAML</li>
                         <li>JSON to XML</li>
                         <li>YAML to JSON/XML</li>
@@ -37,6 +38,7 @@
                     <h3>What's new in version 6.2.0</h3>
                     <ul>
                         <li>When adding input files using the <b>Add Folder</b> button, the subfolder structure of the source directory is now preserved in the output folder. This makes it easier to navigate and identify the converted files, and prevents file name collisions when files with the same name exist in different subfolders of the source directory.</li>
+                        <li>Added a <b>LaTeX to DITA</b> conversion. It uses Pandoc (https://pandoc.org) to convert the LaTeX documents to HTML, then converts the HTML to DITA. The location of Pandoc can be set in the add-on preferences page.</li>
                     </ul>
                 </div>
                 <div class="whatsnew">

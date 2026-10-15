@@ -396,6 +396,15 @@
 		<val lang="nl_NL">OpenAPI naar DITA</val>
 		<val lang="zh_CN">OpenAPI到DITA</val>
 	</key>
+	<key value="Menu_Item_Text_Conv_latex.to.dita">
+		<comment>Text from MenuItem.</comment>
+		<val lang="en_US">LaTeX to DITA</val>
+		<val lang="de_DE">LaTeX zu DITA</val>
+		<val lang="fr_FR">LaTeX vers DITA</val>
+		<val lang="ja_JP">LaTeX から DITA</val>
+		<val lang="nl_NL">LaTeX naar DITA</val>
+		<val lang="zh_CN">LaTeX到DITA</val>
+	</key>
 
 
 	<key value="Add_Input_Label_Conv">
@@ -686,5 +695,41 @@
 		<val lang="ja_JP">XSD to JSON Schema</val>
 		<val lang="nl_NL">XSD to JSON Schema</val>
 		<val lang="zh_CN">XSD to JSON Schema</val>
+	</key>
+	<key value="latex_to_dita_section">
+		<comment>Title of the preferences page section with the LaTeX to DITA options.</comment>
+		<val lang="en_US">LaTeX to DITA</val>
+		<val lang="de_DE">LaTeX zu DITA</val>
+		<val lang="fr_FR">LaTeX vers DITA</val>
+		<val lang="ja_JP">LaTeX から DITA</val>
+		<val lang="nl_NL">LaTeX naar DITA</val>
+		<val lang="zh_CN">LaTeX到DITA</val>
+	</key>
+	<key value="pandoc_executable">
+		<comment>Label of the field holding the location of the Pandoc executable.</comment>
+		<val lang="en_US">Pandoc executable:</val>
+		<val lang="de_DE">Pandoc-Programmdatei:</val>
+		<val lang="fr_FR">Exécutable Pandoc :</val>
+		<val lang="ja_JP">Pandoc 実行ファイル:</val>
+		<val lang="nl_NL">Pandoc-programma:</val>
+		<val lang="zh_CN">Pandoc 可执行文件：</val>
+	</key>
+	<key value="pandoc_executable_description">
+		<comment>Explains the Pandoc executable option. "pandoc" and "PATH" must not be translated.</comment>
+		<val lang="en_US">The LaTeX to DITA conversion uses Pandoc (https://pandoc.org). Leave the field empty to use the "pandoc" command found on the PATH.</val>
+		<val lang="de_DE">Die Umwandlung von LaTeX zu DITA verwendet Pandoc (https://pandoc.org). Lassen Sie das Feld leer, um den im PATH gefundenen Befehl "pandoc" zu verwenden.</val>
+		<val lang="fr_FR">La conversion de LaTeX vers DITA utilise Pandoc (https://pandoc.org). Laissez le champ vide pour utiliser la commande "pandoc" trouvée dans le PATH.</val>
+		<val lang="ja_JP">LaTeX から DITA への変換には Pandoc (https://pandoc.org) を使用します。PATH にある "pandoc" コマンドを使用するには、このフィールドを空のままにしてください。</val>
+		<val lang="nl_NL">De conversie van LaTeX naar DITA gebruikt Pandoc (https://pandoc.org). Laat het veld leeg om de "pandoc"-opdracht uit het PATH te gebruiken.</val>
+		<val lang="zh_CN">LaTeX 到 DITA 的转换使用 Pandoc (https://pandoc.org)。将此字段留空以使用 PATH 中的 "pandoc" 命令。</val>
+	</key>
+	<key value="browse_batch_converter">
+		<comment>Button that opens a file chooser.</comment>
+		<val lang="en_US">Browse</val>
+		<val lang="de_DE">Durchsuchen</val>
+		<val lang="fr_FR">Parcourir</val>
+		<val lang="ja_JP">参照</val>
+		<val lang="nl_NL">Bladeren</val>
+		<val lang="zh_CN">浏览</val>
 	</key>
 </translation>

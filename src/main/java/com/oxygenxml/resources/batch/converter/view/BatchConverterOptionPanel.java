@@ -19,6 +19,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
@@ -117,6 +118,11 @@ public class BatchConverterOptionPanel extends JPanel{
    * The combo for selecting the maximum heading level for creating topics.
    */
   private JComboBox<Integer> maxHeadingLevel;
+  
+  /**
+   * The location of the Pandoc executable used by the LaTeX to DITA conversion.
+   */
+  private JTextField pandocExecutableField;
   
   /**
    * Constructor
@@ -323,6 +329,45 @@ public class BatchConverterOptionPanel extends JPanel{
     constr.insets = new Insets(0, 0, 0, 0);
     add(maxHeadingPanel, constr);
     
+    constr.gridy++;
+    constr.insets = new Insets(15, 0, 0, 0);
+    add(new SectionPane(messages.getMessage(Tags.LATEX_TO_DITA_SECTION)), constr);
+    
+    constr.gridy++;
+    constr.insets = new Insets(0, 1, 7, 1);
+    add(new MultilineLabel(messages.getMessage(Tags.PANDOC_EXECUTABLE_DESCRIPTION)), constr);
+    
+    JPanel pandocPanel = new JPanel(new GridBagLayout());
+    GridBagConstraints pandocConstr = new GridBagConstraints();
+    pandocConstr.gridx = 0;
+    pandocConstr.gridy = 0;
+    pandocConstr.anchor = GridBagConstraints.WEST;
+    pandocConstr.insets = new Insets(0, 1, 0, 1);
+    pandocPanel.add(new JLabel(messages.getMessage(Tags.PANDOC_EXECUTABLE)), pandocConstr);
+    
+    pandocConstr.gridx++;
+    pandocConstr.fill = GridBagConstraints.HORIZONTAL;
+    pandocConstr.weightx = 1;
+    pandocExecutableField = new JTextField();
+    pandocPanel.add(pandocExecutableField, pandocConstr);
+    
+    pandocConstr.gridx++;
+    pandocConstr.fill = GridBagConstraints.NONE;
+    pandocConstr.weightx = 0;
+    pandocPanel.add(new Button(new AbstractAction(messages.getMessage(Tags.BROWSE)) {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        File pandocFile = PluginWorkspaceProvider.getPluginWorkspace().chooseFile(null, null, "", false);
+        if (pandocFile != null) {
+          pandocExecutableField.setText(pandocFile.getAbsolutePath());
+        }
+      }
+    }), pandocConstr);
+    
+    constr.gridy++;
+    constr.insets = new Insets(0, 0, 0, 0);
+    add(pandocPanel, constr);
+    
     loadPageState();
   }
   
@@ -410,6 +455,8 @@ public class BatchConverterOptionPanel extends JPanel{
       
       Integer maxHeadingValue = (Integer) maxHeadingLevel.getSelectedItem();
       optionsStorage.setOption(OptionTags.MAX_HEADING_LEVEL_FOR_TOPICS, maxHeadingValue.toString());
+      
+      optionsStorage.setOption(OptionTags.PANDOC_EXECUTABLE, pandocExecutableField.getText().trim());
     }
   }
 
@@ -431,6 +478,8 @@ public class BatchConverterOptionPanel extends JPanel{
       
       Integer maxHeadingValue = new Integer(optionsStorage.getOption(OptionTags.MAX_HEADING_LEVEL_FOR_TOPICS, ConverterDefaults.DEFAULT_MAX_HEADING_LEVEL_FOR_CREATING_TOPICS.toString()));
       maxHeadingLevel.setSelectedItem(maxHeadingValue);
+      
+      pandocExecutableField.setText(optionsStorage.getOption(OptionTags.PANDOC_EXECUTABLE, ""));
     }
   }
   
@@ -446,5 +495,6 @@ public class BatchConverterOptionPanel extends JPanel{
     }
     WordStylesConfigUtil.setWordStylesMappingInTable(defaultStylesMapping, wordMappingtableModel);
     maxHeadingLevel.setSelectedItem(ConverterDefaults.DEFAULT_MAX_HEADING_LEVEL_FOR_CREATING_TOPICS);
+    pandocExecutableField.setText("");
   }
 }

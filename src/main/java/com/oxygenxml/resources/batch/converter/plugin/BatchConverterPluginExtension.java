@@ -19,6 +19,7 @@ import com.oxygenxml.resources.batch.converter.actions.ConvertAction;
 import com.oxygenxml.resources.batch.converter.actions.ImportAction;
 import com.oxygenxml.resources.batch.converter.dmm.InsertType;
 import com.oxygenxml.resources.batch.converter.dmm.InsertTypeProvider;
+import com.oxygenxml.resources.batch.converter.latex.LatexConversionSupport;
 import com.oxygenxml.resources.batch.converter.translator.OxygenTranslator;
 import com.oxygenxml.resources.batch.converter.translator.Tags;
 import com.oxygenxml.resources.batch.converter.translator.Translator;
@@ -257,7 +258,7 @@ public class BatchConverterPluginExtension implements WorkspaceAccessPluginExten
    * @return the array with import actions for the DMM contextual menu.
    */
   private Action[] createImportActionsList(InsertType insertType, StandalonePluginWorkspace pluginWorkspaceAccess) {
-    Action[] importActionList = new Action[7];
+    Action[] importActionList = new Action[8];
     importActionList[0] = new ImportAction(ConverterTypes.HTML_TO_DITA, insertType, translator);
     importActionList[1] = new ImportAction(ConverterTypes.MD_TO_DITA, insertType, translator);
     importActionList[2] = new ImportAction(ConverterTypes.EXCEL_TO_DITA, insertType, translator);
@@ -265,6 +266,7 @@ public class BatchConverterPluginExtension implements WorkspaceAccessPluginExten
     importActionList[4] = new ImportAction(ConverterTypes.CONFLUENCE_TO_DITAMAP, insertType, translator);
     importActionList[5] = new ImportAction(ConverterTypes.DOCBOOK_TO_DITA, insertType, translator);
     importActionList[6] = new ImportAction(ConverterTypes.OPENAPI_TO_DITA, insertType, translator);
+    importActionList[7] = new ImportAction(LatexConversionSupport.LATEX_TO_DITA, insertType, translator);
     return importActionList;
   }
   
@@ -284,6 +286,7 @@ public class BatchConverterPluginExtension implements WorkspaceAccessPluginExten
     List<Action> json = new ArrayList<>();
     List<Action> confluence = new ArrayList<>();
     List<Action> openAPI = new ArrayList<>();
+    List<Action> latex = new ArrayList<>();
     
     html.add(new ConvertAction(ConverterTypes.HTML_TO_XHTML, translator, this));
     html.add(new ConvertAction(ConverterTypes.HTML_TO_DITA, translator, this));
@@ -312,6 +315,9 @@ public class BatchConverterPluginExtension implements WorkspaceAccessPluginExten
     
     openAPI.add(new ConvertAction(ConverterTypes.OPENAPI_TO_DITA, translator, this));
     toReturn.put("openAPI", openAPI);
+    
+    latex.add(new ConvertAction(LatexConversionSupport.LATEX_TO_DITA, translator, this));
+    toReturn.put("latexSection", latex);
     
     json.add(new ConvertAction(ConverterTypes.JSON_TO_XML,       translator, this));
     json.add(new ConvertAction(ConverterTypes.JSON_TO_YAML,      translator, this));

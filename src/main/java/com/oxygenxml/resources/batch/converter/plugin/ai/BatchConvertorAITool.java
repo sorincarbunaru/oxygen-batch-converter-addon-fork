@@ -26,12 +26,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.oxygenxml.batch.converter.core.ConversionFormatUtil;
 import com.oxygenxml.batch.converter.core.ConversionOptionTags;
-import com.oxygenxml.batch.converter.core.extensions.ExtensionGetter;
 import com.oxygenxml.resources.batch.converter.BatchConverterImpl;
 import com.oxygenxml.resources.batch.converter.InputFilesManager;
 import com.oxygenxml.resources.batch.converter.UserInputsProvider;
+import com.oxygenxml.resources.batch.converter.latex.LatexConversionSupport;
 import com.oxygenxml.resources.batch.converter.reporter.ProgressDialogInteractor;
 import com.oxygenxml.resources.batch.converter.reporter.ResultsUtil;
 import com.oxygenxml.resources.batch.converter.reporter.StatusReporter;
@@ -163,8 +162,9 @@ public class BatchConvertorAITool implements ExternalAIFunction {
     return "Convert documents from one format to another."
         + "Provide the input format, the output format, the input files (or directories) and the output "
         + "folder where the converted files are written. Supported conversions include HTML/Markdown/Word/"
-        + "Excel/Confluence/DocBook/OpenAPI to DITA, HTML/Markdown/Word to XHTML or DocBook, and conversions "
-        + "between XML, JSON, YAML and XSD to JSON Schema. Returns the produced output files and the "
+        + "Excel/Confluence/DocBook/OpenAPI/LaTeX to DITA, HTML/Markdown/Word to XHTML or DocBook, and conversions "
+        + "between XML, JSON, YAML and XSD to JSON Schema. LaTeX to DITA needs Pandoc to be installed. "
+        + "Returns the produced output files and the "
         + "conversions that failed, in JSON format. When the conversion also raises warnings, like the "
         + "unrecognized Word styles, these are reported in the Results panel and the result carries "
         + "their \"warningCount\" and the \"warningsResultsTab\" holding them: read that tab when they "
@@ -204,7 +204,7 @@ public class BatchConvertorAITool implements ExternalAIFunction {
         .put("type", "string")
         .put("description",
             "The format of the input files. Possible values: \"html\", \"markdown\", \"word\", \"excel\", "
-                + "\"confluence\", \"docbook\", \"openapi\", \"json\", \"yaml\", \"xml\" or \"xsd\"."));
+                + "\"confluence\", \"docbook\", \"openapi\", \"latex\", \"json\", \"yaml\", \"xml\" or \"xsd\"."));
     properties.put(PARAM_OUTPUT_FORMAT, new JSONObject()
         .put("type", "string")
         .put("description",
@@ -226,7 +226,7 @@ public class BatchConvertorAITool implements ExternalAIFunction {
         .put("type", "boolean")
         .put("description",
             "Optional. Split sections marked by titles or headings into separate files and create a DITA Map "
-                + "(only for Word, HTML, Markdown, DocBook and OpenAPI to DITA conversions). Defaults to true."));
+                + "(only for Word, HTML, Markdown, DocBook, OpenAPI and LaTeX to DITA conversions). Defaults to true."));
     properties.put(PARAM_CREATE_SHORT_DESCRIPTION, new JSONObject()
         .put("type", "boolean")
         .put("description",
@@ -306,7 +306,7 @@ public class BatchConvertorAITool implements ExternalAIFunction {
 
     Integer maxHeadingLevelForTopics = readMaxHeadingLevelForTopics(params);
 
-    String converterType = ConversionFormatUtil.getConverterType(inputFormat, outputFormat);
+    String converterType = LatexConversionSupport.getConverterType(inputFormat, outputFormat);
     if (converterType == null) {
       throw new IllegalArgumentException(
           "The \"" + inputFormat + "\" to \"" + outputFormat + "\" conversion is not supported.");
@@ -398,7 +398,7 @@ public class BatchConvertorAITool implements ExternalAIFunction {
     putIfPresent(params, PARAM_SPLIT_SECTIONS, requestedOptions,
         ConversionOptionTags.CREATE_DITA_MAP_FROM_WORD, ConversionOptionTags.CREATE_DITA_MAP_FROM_HTML,
         ConversionOptionTags.CREATE_DITA_MAP_FROM_MD, ConversionOptionTags.CREATE_DITA_MAP_FROM_DOCBOOK,
-        ConversionOptionTags.CREATE_DITA_MAP_FROM_OPEN_API);
+        ConversionOptionTags.CREATE_DITA_MAP_FROM_OPEN_API, LatexConversionSupport.CREATE_DITA_MAP_FROM_LATEX);
     putIfPresent(params, PARAM_CREATE_SHORT_DESCRIPTION, requestedOptions,
         ConversionOptionTags.CREATE_SHORT_DESCRIPTION);
     return requestedOptions;
@@ -508,7 +508,7 @@ public class BatchConvertorAITool implements ExternalAIFunction {
   private InputFilesManager collectInputFiles(JSONArray inputFilesArray, String converterType,
       Map<String, Object> extraContext, List<String> nonLocalEntries, List<String> missingEntries)
       throws ExternalServiceException {
-    List<String> inputExtensions = Arrays.asList(ExtensionGetter.getInputExtension(converterType));
+    List<String> inputExtensions = Arrays.asList(LatexConversionSupport.getInputExtension(converterType));
     InputFilesManager inputFilesManager = new InputFilesManager();
     Set<File> processedEntries = new HashSet<>();
     for (int i = 0; i < inputFilesArray.length(); i++) {

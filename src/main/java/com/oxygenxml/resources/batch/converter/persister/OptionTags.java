@@ -30,4 +30,9 @@ public class OptionTags extends ConversionOptionTags {
     * Max heading level for creating DITA topics.
     */
    public static final String MAX_HEADING_LEVEL_FOR_TOPICS = "max.heading.leve.for.topics";
+   
+   /**
+    * The location of the Pandoc executable used by the LaTeX to DITA conversion.
+    */
+   public static final String PANDOC_EXECUTABLE = "pandoc.executable.batch.converter";
 }

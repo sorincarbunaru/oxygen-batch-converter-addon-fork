@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.oxygenxml.batch.converter.core.ConverterTypes;
+import com.oxygenxml.resources.batch.converter.latex.LatexConversionSupport;
 import com.oxygenxml.resources.batch.converter.persister.OptionTags;
 import com.oxygenxml.resources.batch.converter.translator.OxygenTranslator;
 import com.oxygenxml.resources.batch.converter.translator.Tags;
@@ -34,6 +35,8 @@ public class ConverterAdditionalOptionsProvider {
         new AdditionalOptionsInfo(MessageFormat.format(translator.getTranslation(Tags.CREATE_DITA_MAP_FROM_DOCUMENT_HEADINGS), "Markdown"), true));
     addionalOptionToTranslationTag.put(OptionTags.CREATE_DITA_MAP_FROM_HTML,
         new AdditionalOptionsInfo(MessageFormat.format(translator.getTranslation(Tags.CREATE_DITA_MAP_FROM_DOCUMENT_HEADINGS), "HTML"), true));
+    addionalOptionToTranslationTag.put(LatexConversionSupport.CREATE_DITA_MAP_FROM_LATEX,
+        new AdditionalOptionsInfo(MessageFormat.format(translator.getTranslation(Tags.CREATE_DITA_MAP_FROM_DOCUMENT_SECTIONS), "LaTeX"), true));
     addionalOptionToTranslationTag.put(OptionTags.CREATE_DITA_MAP_FROM_DOCBOOK,
         new AdditionalOptionsInfo(MessageFormat.format(translator.getTranslation(Tags.CREATE_DITA_MAP_FROM_DOCUMENT_SECTIONS), "DocBook"), true));
     addionalOptionToTranslationTag.put(OptionTags.CREATE_SHORT_DESCRIPTION,
@@ -80,6 +83,8 @@ public class ConverterAdditionalOptionsProvider {
       options.add(OptionTags.IGNORE_DIV_ELEMENTS_FROM_HTML);
     } else if(ConverterTypes.DOCBOOK_TO_DITA.equals(conversionType)) {
       options.add(OptionTags.CREATE_DITA_MAP_FROM_DOCBOOK);
+    } else if(LatexConversionSupport.isLatexToDita(conversionType)) {
+      options.add(LatexConversionSupport.CREATE_DITA_MAP_FROM_LATEX);
     } else if(ConverterTypes.OPENAPI_TO_DITA.equals(conversionType)) {
       options.add(OptionTags.CREATE_DITA_MAP_FROM_OPEN_API);
     } else if(ConverterTypes.XSD_TO_JSONSCHEMA.equals(conversionType)) {

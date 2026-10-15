@@ -18,6 +18,10 @@ This add-on can be installed in Oxygen XML Editor to enable batch conversions be
 
 * DocBook to DITA
 
+* OpenAPI to DITA
+
+* LaTeX to DITA (requires [Pandoc](https://pandoc.org))
+
 * JSON to XML
 * JSON to YAML
 * XML to JSON
@@ -62,6 +66,18 @@ or:
 1. Select a folder or a set of files in the **Project** view, right-click, choose **Batch Convertor**. 
 1. Choose the path of the **Output folder** that will contain the converted document.
 1. Click the **Convert** button.
+
+## Converting LaTeX documents to DITA
+
+The **LaTeX to DITA** conversion uses [Pandoc](https://pandoc.org) to convert the LaTeX documents (`.tex`, `.latex`, `.ltx`) to HTML, and then converts the HTML to DITA.
+
+1. Install Pandoc.
+2. If Pandoc is not on the `PATH`, set its location in the **Pandoc executable** field of the **Batch Documents Converter** preferences page.
+
+Notes:
+* The LaTeX `\input` and `\include` commands are resolved relative to the folder of each document.
+* Image references are written as absolute file URLs, so that they resolve from the output folder.
+* Math is kept as LaTeX source text.
 
 When actions are invoked from the contextual menu of the **DITA Maps Manager** view, 
 the resulting documents from the conversion are automatically inserted in the map as follows:

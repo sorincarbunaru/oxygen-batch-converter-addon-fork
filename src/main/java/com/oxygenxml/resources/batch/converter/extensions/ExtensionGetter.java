@@ -1,5 +1,7 @@
 package com.oxygenxml.resources.batch.converter.extensions;
 
+import com.oxygenxml.resources.batch.converter.latex.LatexConversionSupport;
+
 /**
  * Provider for file extensions suported by the converter.
  * This class is used from the "Batch Converter" script from Oxygen. Do NOT delete it.
@@ -25,7 +27,7 @@ public class ExtensionGetter {
    * @return A vector with extensions or <code>null</code> if isn't declared a extension for given conversion formats.
    */
   public static String[] getInputExtension(String inputFormat, String outputFormat) {
-    return com.oxygenxml.batch.converter.core.extensions.ExtensionGetter.getInputExtension(inputFormat, outputFormat);
+    return LatexConversionSupport.getInputExtension(inputFormat, outputFormat);
   }
 
   /**
@@ -34,6 +36,6 @@ public class ExtensionGetter {
    * @return A vector with extensions or <code>null</code> if isn't declared a extension for given converter type.
    */
   public static String[] getInputExtension(String converterType) {
-    return  com.oxygenxml.batch.converter.core.extensions.ExtensionGetter.getInputExtension(converterType);
+    return LatexConversionSupport.getInputExtension(converterType);
   }
 }

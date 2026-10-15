@@ -240,4 +240,24 @@ public class Tags {
    * en: Tooltip for the Add Folder button. {0} is replaced with the accepted extensions.
    */
   public static final String ADD_FOLDER_TOOLTIP = "Add_folder_tooltip";
+
+  /**
+   * en: LaTeX to DITA
+   */
+  public static final String LATEX_TO_DITA_SECTION = "latex_to_dita_section";
+
+  /**
+   * en: Pandoc executable:
+   */
+  public static final String PANDOC_EXECUTABLE = "pandoc_executable";
+
+  /**
+   * en: The LaTeX to DITA conversion uses Pandoc. Leave the field empty to use the "pandoc" command found on the PATH.
+   */
+  public static final String PANDOC_EXECUTABLE_DESCRIPTION = "pandoc_executable_description";
+
+  /**
+   * en: Browse
+   */
+  public static final String BROWSE = "browse_batch_converter";
 }
